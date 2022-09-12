@@ -3,6 +3,7 @@ package org.kurodev.calculator.maths;
 /**
  * Conclusive list of all operations that can be calculated by the calculator in order of precedence.
  */
+@SuppressWarnings("unused") //they are all used.
 public enum DefaultOperations implements Operation {
     ADD('+') {
         @Override
