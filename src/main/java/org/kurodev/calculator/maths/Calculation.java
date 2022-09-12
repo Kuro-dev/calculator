@@ -15,12 +15,16 @@ public strictfp class Calculation {
     }
 
     public Calculation(double value) {
-        this(BigDecimal.valueOf(value), RoundingMode.HALF_UP);
+        this(BigDecimal.valueOf(value));
     }
 
     public Calculation(BigDecimal value, RoundingMode roundingMode) {
         this.value = value;
         this.roundingMode = roundingMode;
+    }
+
+    public Calculation(BigDecimal value) {
+        this(value, RoundingMode.HALF_UP);
     }
 
     /**

@@ -41,24 +41,25 @@ public class FormulaParser {
 
     /**
      * Adds the given operation to the parser and enables calculation with it using strings.
+     * For an operation to be added it must conform to the following rules:
+     *
+     * <p>- It must not be an Alphabetic Character</p>
+     * <p>- It must not be a Digit</p>
+     * <p>- It must be unique (not yet used by another item in the set)</p>
+     *
+     * <p>if any of these conditions are not met, the item will not be added.</p>
      *
      * @param o The operation to support.
+     * @return {@code true} if the operation has been added, {@code false} otherwise
      * @implNote Recomputes the parser regex everytime something is added.
      * To add multiple operations use {@link #addOperation(Collection)}
      * @see #addOperation(Collection)
      */
-    public static void addOperation(Operation o) {
-        if (!OPERATIONS.stream().map(Operation::getOperator).toList().contains(o.getOperator()))
-            OPERATIONS.add(o);
-    }
-
-    public static void removeOperation(Operation o) {
-        OPERATIONS.removeIf(operation -> operation.getOperator() == o.getOperator());
-    }
-
-    public static void restoreDefaultOperations() {
-        OPERATIONS.clear();
-        OPERATIONS.addAll(EnumSet.allOf(DefaultOperations.class));
+    public static boolean addOperation(Operation o) {
+        if (!OPERATIONS.stream().map(Operation::getOperator).toList().contains(o.getOperator()) &&
+                !Character.isAlphabetic(o.getOperator()) && !Character.isDigit(o.getOperator()))
+            return OPERATIONS.add(o);
+        return false;
     }
 
     /**
@@ -68,10 +69,16 @@ public class FormulaParser {
      * @see #addOperation(Operation)
      */
     public static void addOperation(Collection<Operation> o) {
-        o.forEach(operation -> {
-            if (!OPERATIONS.stream().map(Operation::getOperator).toList().contains(operation.getOperator()))
-                OPERATIONS.add(operation);
-        });
+        o.forEach(FormulaParser::addOperation);
+    }
+
+    public static void removeOperation(Operation o) {
+        OPERATIONS.removeIf(operation -> operation.getOperator() == o.getOperator());
+    }
+
+    public static void restoreDefaultOperations() {
+        OPERATIONS.clear();
+        OPERATIONS.addAll(EnumSet.allOf(DefaultOperations.class));
     }
 
     /**
