@@ -1,15 +1,14 @@
 package org.kurodev.calculator.maths;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Calculates any given string or mathematical expression that consists of any of the supported operations and parenthesis.
  *
- * @see Operation
+ * @see DefaultOperations
  */
 public class FormulaParser {
     /**
@@ -33,15 +32,47 @@ public class FormulaParser {
      */
     public static final Calculation UNKNOWN_VARIABLE = Calculation.errorInstance("Unknown Variable");
     public static final Calculation INVALID_ASSIGNMENT = Calculation.errorInstance("Invalid assigment");
-    private static final Pattern EXPRESSION_VALID = Pattern.compile("^(" + Operation.getRegex() + "((\\d+(\\.\\d+)?)|(?<!\\d)+[a-zA-Z]+))+$");
     private static final Pattern CONTAINS_VARIABLE = Pattern.compile("[a-zA-Z]+");
     private static final Pattern MULTIPLE_SIGNS = Pattern.compile("[+-]{2,}");
 
-    static {
-        System.out.println(EXPRESSION_VALID.pattern());
+    private static final Set<Operation> OPERATIONS = new HashSet<>(EnumSet.allOf(DefaultOperations.class));
+    private final Map<String, BigDecimal> variables = new HashMap<>();
+
+
+    /**
+     * Adds the given operation to the parser and enables calculation with it using strings.
+     *
+     * @param o The operation to support.
+     * @implNote Recomputes the parser regex everytime something is added.
+     * To add multiple operations use {@link #addOperation(Collection)}
+     * @see #addOperation(Collection)
+     */
+    public static void addOperation(Operation o) {
+        if (!OPERATIONS.stream().map(Operation::getOperator).toList().contains(o.getOperator()))
+            OPERATIONS.add(o);
     }
 
-    private final Map<String, BigDecimal> variables = new HashMap<>();
+    public static void removeOperation(Operation o) {
+        OPERATIONS.removeIf(operation -> operation.getOperator() == o.getOperator());
+    }
+
+    public static void restoreDefaultOperations() {
+        OPERATIONS.clear();
+        OPERATIONS.addAll(EnumSet.allOf(DefaultOperations.class));
+    }
+
+    /**
+     * adds multiple operations to the parser.
+     * recomputes regex once they have all be added.
+     *
+     * @see #addOperation(Operation)
+     */
+    public static void addOperation(Collection<Operation> o) {
+        o.forEach(operation -> {
+            if (!OPERATIONS.stream().map(Operation::getOperator).toList().contains(operation.getOperator()))
+                OPERATIONS.add(operation);
+        });
+    }
 
     /**
      * @param formula formula like 5+3-7+9
@@ -59,9 +90,11 @@ public class FormulaParser {
             normalized = normalize(normalized);
             if (PostfixCalculator.IS_NUMBER.matcher(normalized).matches())
                 return new Calculation(Double.parseDouble(normalized));
-            var prefix = PostfixConverter.toPostfix(normalized);
+            PostfixConverter converter = new PostfixConverter(OPERATIONS);
+            var prefix = converter.toPostfix(normalized);
+            PostfixCalculator calculator = new PostfixCalculator(OPERATIONS);
             if (prefix == null) return INVALID_EXPRESSION;
-            return PostfixCalculator.evaluate(prefix);
+            return calculator.evaluate(prefix);
         } else {
             return assignVar(normalized);
         }
@@ -114,7 +147,7 @@ public class FormulaParser {
             }
             lastEnd = matcher.end();
         }
-            builder.append(formula.substring(lastEnd));
+        builder.append(formula.substring(lastEnd));
         return builder.toString();
     }
 

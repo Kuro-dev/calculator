@@ -2,15 +2,41 @@ package org.kurodev.calculator.maths;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Set;
 
 public class PostfixConverter {
     //some very unique character
     public static final String DELIM = " "; //ǀ
+    private final Set<Operation> operations;
 
-    private PostfixConverter() {
+    PostfixConverter(Set<Operation> operations) {
+        this.operations = operations;
     }
 
-    public static String toPostfix(String infix) {
+    private static Boolean isParenthesis(char c, Deque<Character> stack, StringBuilder postfixExp) {
+        if (c == '(') {
+            stack.push(c);
+            return true;
+        }
+        if (c == ')') {
+            if (stack.contains('(')) {
+                flushParenthesis(stack, postfixExp);
+                return true;
+            }
+            return null;
+        }
+        return false;
+    }
+
+    private static void flushParenthesis(Deque<Character> stack, StringBuilder postfixExp) {
+        while (!stack.isEmpty() && stack.peek() != '(') {
+            postfixExp.append(DELIM).append(stack.pop());
+        }
+        if (!stack.isEmpty())
+            stack.removeFirst(); //remove opening parenthesis
+    }
+
+    public String toPostfix(String infix) {
         Deque<Character> stack = new ArrayDeque<>();
         StringBuilder result = new StringBuilder();
         for (char c : infix.toCharArray()) {
@@ -39,23 +65,8 @@ public class PostfixConverter {
         return result.toString();
     }
 
-    private static Boolean isParenthesis(char c, Deque<Character> stack, StringBuilder postfixExp) {
-        if (c == '(') {
-            stack.push(c);
-            return true;
-        }
-        if (c == ')') {
-            if (stack.contains('(')) {
-                flushParenthesis(stack, postfixExp);
-                return true;
-            }
-            return null;
-        }
-        return false;
-    }
-
     @SuppressWarnings("ConstantConditions") //never happens
-    private static void addOperator(char c, Deque<Character> stack, StringBuilder postfixExp) {
+    private void addOperator(char c, Deque<Character> stack, StringBuilder postfixExp) {
         var a = precedence(stack.peek());
         var b = precedence(c);
         if (b <= a) {
@@ -71,21 +82,13 @@ public class PostfixConverter {
         stack.push(c);
     }
 
-    private static void flushParenthesis(Deque<Character> stack, StringBuilder postfixExp) {
-        while (!stack.isEmpty() && stack.peek() != '(') {
-            postfixExp.append(DELIM).append(stack.pop());
-        }
-        if (!stack.isEmpty())
-            stack.removeFirst(); //remove opening parenthesis
-    }
-
-    private static int precedence(char c) {
+    private int precedence(char c) {
         var out = getOp(c);
         return out == null ? -1 : out.getPrecedence();
     }
 
-    private static Operation getOp(char c) {
-        for (var op : Operation.values()) {
+    private Operation getOp(char c) {
+        for (var op : operations) {
             if (op.getOperator() == c) {
                 return op;
             }
