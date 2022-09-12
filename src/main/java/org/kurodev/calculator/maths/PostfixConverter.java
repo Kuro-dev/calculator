@@ -13,7 +13,15 @@ public class PostfixConverter {
         this.operations = operations;
     }
 
-    private static Boolean isParenthesis(char c, Deque<Character> stack, StringBuilder postfixExp) {
+    private static void flushParenthesis(Deque<Character> stack, StringBuilder postfixExp) {
+        while (!stack.isEmpty() && stack.peek() != '(') {
+            postfixExp.append(DELIM).append(stack.pop());
+        }
+        if (!stack.isEmpty())
+            stack.removeFirst(); //remove opening parenthesis
+    }
+
+    private Boolean isParenthesis(char c, Deque<Character> stack, StringBuilder postfixExp) {
         if (c == '(') {
             stack.push(c);
             return true;
@@ -26,14 +34,6 @@ public class PostfixConverter {
             return null;
         }
         return false;
-    }
-
-    private static void flushParenthesis(Deque<Character> stack, StringBuilder postfixExp) {
-        while (!stack.isEmpty() && stack.peek() != '(') {
-            postfixExp.append(DELIM).append(stack.pop());
-        }
-        if (!stack.isEmpty())
-            stack.removeFirst(); //remove opening parenthesis
     }
 
     public String toPostfix(String infix) {
