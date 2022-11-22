@@ -28,6 +28,14 @@ public class ParserTest {
     }
 
     @Test
+    public void testMultiplicationRange() {
+        for (int i = -5; i <= 5; i++) {
+            parser.getVariables().put("x", BigDecimal.valueOf(i));
+            assertEquals(i * 2, parser.calculate("2x").getResult().intValue());
+        }
+    }
+
+    @Test
     public void testImplicitMultiplication() {
         String formula = "2x";
         String expected = "20";

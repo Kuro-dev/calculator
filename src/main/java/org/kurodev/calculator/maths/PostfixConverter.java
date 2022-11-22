@@ -39,16 +39,26 @@ public class PostfixConverter {
     public String toPostfix(String infix) {
         Deque<Character> stack = new ArrayDeque<>();
         StringBuilder result = new StringBuilder();
-        for (char c : infix.toCharArray()) {
+        char[] charArray = infix.toCharArray();
+        for (int i = 0, charArrayLength = charArray.length; i < charArrayLength; i++) {
+            char c = charArray[i];
             var parenthesis = isParenthesis(c, stack, result);
             if (parenthesis == null) {
                 return null;
             }
             if (parenthesis) continue;
-            var operator = getOp(c);
+            Operation operator = getOp(c);
             if (operator == null) {
                 result.append(c);
             } else {
+                if (i != 0 && i + 1 < charArrayLength) {
+                    char before = charArray[i - 1];
+                    char after = charArray[i + 1];
+                    if (before=='*' && Character.isDigit(after)){
+                        result.append(c);
+                        continue;
+                    }
+                }
                 if (stack.isEmpty()) {
                     result.append(DELIM);
                     stack.push(c);

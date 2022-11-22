@@ -6,6 +6,9 @@ import org.kurodev.calculator.maths.Calculation;
 import static org.junit.Assert.assertEquals;
 
 public class CalculatorTest {
+
+
+
     @Test
     public void testAddition() {
         Calculation calc = new Calculation();
