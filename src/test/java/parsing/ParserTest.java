@@ -36,6 +36,14 @@ public class ParserTest {
     }
 
     @Test
+    public void testPowRange() {
+        for (int i = -5; i <= 5; i++) {
+            parser.getVariables().put("x", BigDecimal.valueOf(i));
+            assertEquals((int) Math.pow(i, 2), parser.calculate("x^2").getResult().intValue());
+        }
+    }
+
+    @Test
     public void testImplicitMultiplication() {
         String formula = "2x";
         String expected = "20";
