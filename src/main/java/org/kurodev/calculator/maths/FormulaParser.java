@@ -92,9 +92,8 @@ public class FormulaParser {
     public Calculation calculate(String formula) {
         var normalized = formula.replaceAll("\\s", "");
         if (!formula.contains("=")) {
-            normalized = resolveVars(normalized);
+            normalized = resolveVars(normalize(normalized));
             if (normalized == null) return UNKNOWN_VARIABLE;
-            normalized = normalize(normalized);
             if (PostfixCalculator.IS_NUMBER.matcher(normalized).matches())
                 return new Calculation(Double.parseDouble(normalized));
             PostfixConverter converter = new PostfixConverter(OPERATIONS);
@@ -112,6 +111,7 @@ public class FormulaParser {
                 Pattern.compile("(\\d\\()"), // 3( -> 3*(
                 Pattern.compile("(\\)\\d)"), // )3 -> )*3
                 Pattern.compile("(\\)\\()"), // )( -> )*(
+                Pattern.compile("\\d+[a-zA-Z]+"), //2x -> 2*x
         };
         for (Pattern pattern : patterns) {
             var matcher = pattern.matcher(formula);
@@ -119,6 +119,7 @@ public class FormulaParser {
             replaceStringSmart(matcher, formulaCorrected, formula);
             formula = formulaCorrected.toString();
         }
+
         return normalizeCorrectedFormula(formula);
     }
 
