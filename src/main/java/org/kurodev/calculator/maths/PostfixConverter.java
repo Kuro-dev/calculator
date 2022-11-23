@@ -54,7 +54,7 @@ public class PostfixConverter {
                 if (i != 0 && i + 1 < charArrayLength) {
                     char before = charArray[i - 1];
                     char after = charArray[i + 1];
-                    if (before == '*' && Character.isDigit(after)) {
+                    if ((before == '*' || before == '+' || before == '/') && Character.isDigit(after)) {
                         result.append(c);
                         continue;
                     }

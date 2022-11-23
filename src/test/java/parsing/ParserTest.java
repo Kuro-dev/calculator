@@ -36,6 +36,16 @@ public class ParserTest {
     }
 
     @Test
+    public void testMultiSameVar() {
+        String formula = "x^2-(10+x)";
+        for (int i = -5; i <= 5; i++) {
+            parser.getVariables().put("x", BigDecimal.valueOf(i));
+            assertEquals((int) Math.pow(i, 2) - (10 + i),
+                    parser.calculate(formula).getResult().intValue());
+        }
+    }
+
+    @Test
     public void testPowRange() {
         for (int i = -5; i <= 5; i++) {
             parser.getVariables().put("x", BigDecimal.valueOf(i));
